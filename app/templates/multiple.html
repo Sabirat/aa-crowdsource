@@ -1,0 +1,26 @@
+<!--<html>
+  <head>
+    <title>{{ title }} - microblog</title>
+  </head>
+  <body>
+      <h1>Hello, {{ username }}!</h1>
+  </body>
+</html>-->
+
+<!DOCTYPE html>
+<html>
+<body style="margin:20px;">
+	<h2>Hi, there!</h2>
+	<p> Help us validate an AA meeting.</p>
+	<h3>Instructions</h3>
+	<p style="font-size:18px;"> Clicking "Open Meeting Page" will open a new window with a meeting page. Please select one of the meeting which has not already been highlighted. When you are done
+		selecting. Please click submit on this window. Do not close the new window before submitting </p>
+
+  <form method="get" action="/TextHighlighted">
+		{% if param==false %}
+			<input type="submit" name="openwindow" value="Open Meeting Page">
+	  {% endif %}
+		<input type="submit" name="submit" value="Submit Data">
+	</form>
+</body>
+</html>

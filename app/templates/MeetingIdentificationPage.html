@@ -1,0 +1,59 @@
+<script src="https://www.script-tutorials.com/demos/13/js/jquery.min.js"></script>
+<script src="https://www.script-tutorials.com/demos/13/js/jquery.ui.widget.js"></script>
+<script src="https://www.script-tutorials.com/demos/13/js/jquery.ui.accordion.js"></script>
+<script src="https://www.script-tutorials.com/demos/13/js/jquery.Jcrop.min.js"></script>
+
+<link rel="stylesheet" href="https://www.script-tutorials.com/demos/13/templates/css/jquery.ui.theme.css" type="text/css" />
+<link rel="stylesheet" href="https://www.script-tutorials.com/demos/13/templates/css/jquery.ui.accordion.css" type="text/css" />
+<link rel="stylesheet" href="https://www.script-tutorials.com/demos/13/templates/css/jquery.Jcrop.css" type="text/css" />
+<!--<link rel="stylesheet" href="https://www.script-tutorials.com/demos/13/templates/css/jcrop_main.css" type="text/css" /> -->
+
+<script src="{{ url_for('static', filename = 'js/jcropMain.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename = 'css/jcropStyle.css') }}" type="text/css" />
+
+<div width="1200px;">
+  <div id="accordion" class="accordion" >
+    <h3><a href="#">Identify A Meeting</a></h3>
+    <div class="sample_1" >
+		  <a href="./index">(Go Back to Home)</a>
+			<div style="height:400px;">
+        <img src="{{ url_for('static', filename = imagepath) }}" id="cropbox1" />
+			</div>
+
+			<div width:100%; id='divradio'>
+        <p>In the above image can you see a meeting information that has not been highlighted
+			     (the highlighted meetings are with yellow background)?</p>
+			  <input type="radio" name="meetingradio" value="yes" selected> Yes<br>
+        <input type="radio" name="meetingradio" value="no"> No<br>
+			</div>
+
+      <form id="xyform" style="display:none;" action="/ImageCropFormReturn" method="post" onsubmit="return checkCoords();">
+        <div style="margin:5px; display:none;">
+          <label>X1 <input type="text" name="x" id="x" size="4"/></label>
+          <label>Y1 <input type="text" name="y" id="y" size="4"/></label>
+          <label>X2 <input type="text" name="x2" id="x2" size="4"/></label>
+          <label>Y2 <input type="text" name="y2" id="y2" size="4"/></label>
+          <label>W <input type="text" name="w" id="w" size="4"/></label>
+          <label>H <input type="text" name="h" id="h" size="4"/></label>
+					<label>URL <input type="text" name="corr_url" id="corr_url" value={{url}} /></label>
+					<label>Imagepath <input type="text" name="img_path" id="img_path" value={{imagepath}} /></label>
+        </div>
+
+				<p>Draw a rectangle with mouse around any unhighlighted meeting information. Make sure you draw rectangle around a single meeting. Then click submit.</p>
+        <div style="margin:5px; text-align:right">
+          <input type="submit" value="Submit" />
+        </div>
+      </form>
+      
+      <p>
+      </p>
+
+			<div style="margin-bottom:10px; display:none">
+        <h4>Preview pane:</h4>
+        <div style="overflow: hidden; height: 200px;">
+          <img id="preview" src="{{ url_for('static', filename = imagepath) }}"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

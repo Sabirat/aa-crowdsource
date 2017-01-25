@@ -1,0 +1,41 @@
+<html>
+<head>
+  <script src="https://www.atlasestateagents.co.uk/javascript/tether.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/homepageStyle.css') }}"></link>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity "sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous"></link>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
+  <script>
+    $(document).ready(function(){
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+  </script>
+</head>
+<body>
+  <div class="jumbotron vertical-center">
+    <div class="container text-center">
+      <form id='form1' action="/FindAppropriateTask" method="post">
+        <h3> I want to:<h3>
+        <button
+          class="btn btn-info"
+          type="submit"
+          name="submit"
+          value="Validate Meeting Information"
+          data-toggle="tooltip"
+          title="You will see highlighted information about only one meeting. You have to identify if that is a valid AA meeting information. You may need to edit time, day or address of the meeting">
+          Validate Meeting Information
+        </button>
+        <button
+          class="btn btn-info"
+          type="submit"
+          name="submit"
+          value="Identify Meeting from Webpage"
+          data-toggle="tooltip"
+	        title="You will see all of the highlighted meetings as an image. You have to draw rectangle around unhighlighted meetings if there is any.">
+          Identify Meeting from Webpage
+        </button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
