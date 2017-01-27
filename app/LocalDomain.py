@@ -50,7 +50,7 @@ def copySourcePage(meetingrecord, pathf):
 
 			break
 
-	html_page_source = browser.page_source
+	html_page_source = browser.page_source.encode('utf-8')
 
 	lenSource = len(html_page_source)
 	srcIndexFound = html_page_source.find("src",index)
