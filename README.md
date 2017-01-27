@@ -12,6 +12,7 @@ Crowdsourcing platform for global self-updating AA meeting list
 ##### MySQL (this will be changed soon)
 You will also need MySQL installed and a server running. Soon we will just have the DB on a server and
 update the calls to use that so that you do not need a local version running. But for now:
+
 1. [Install MySQL](https://dev.mysql.com/downloads/installer/)
 2. You may need to type `export PATH=$PATH:/usr/local/mysql/bin` in the shell so that you have the command `mysql` in your `PATH`
 3. Enter the SQL shell `mysql` and create database `CREATE DATABASE aameetings;`
