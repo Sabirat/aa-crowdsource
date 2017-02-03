@@ -73,13 +73,13 @@ CREATE TABLE `meetinginformation` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `localdomainsourcecode`
+-- Table structure for table `local_domain_source_code`
 --
 
-CREATE TABLE `localdomainsourcecode` (
+CREATE TABLE `local_domain_source_code` (
   `url` varchar(756) NOT NULL, -- The maximum length of an url is 2083. however, the max key length is 767 bytes.
   `seq` int(11) NOT NULL,
-  `sourcecode` varchar(60000) NOT NULL -- The maximum row size for the used table type, not counting BLOBs, is 65535.
+  `source_code` varchar(60000) NOT NULL -- The maximum row size for the used table type, not counting BLOBs, is 65535.
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
@@ -4180,9 +4180,9 @@ ALTER TABLE `urlsbyimage`
   ADD PRIMARY KEY (`url`,`imagename`);
 
 --
--- Indexes for table `localdomainsourcecode`
+-- Indexes for table `local_domain_source_code`
 --
-ALTER TABLE `localdomainsourcecode`
+ALTER TABLE `local_domain_source_code`
   ADD PRIMARY KEY (`url`,`seq`);
 
 --
