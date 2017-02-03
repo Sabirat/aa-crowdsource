@@ -1,78 +1,92 @@
-{% block body %}
-<head>
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/homepageStyle.css') }}">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity "sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/validatemeetingStyle.css') }}">
-</head>
 
-<body>
+{% block body %}
+	<head>
+		
+		
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/homepageStyle.css') }}">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity "sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
+		
+		
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/validatemeetingStyle.css') }}">
+	</head>
+
+	<body>
 	<div class="container">
-  	<div class="well">
-			<h2>Help Us Validate a Meeting <small><a href="./index">(Go back to Home)</a></small></h2>
-			Information:
-			<ul>
+    <div class="well">
+		<h2>Help Us Validate a Meeting <small><a href="./index">(Go back to Home)</a></small></h2>
+		Information:
+		<ul>
 			  <li >If you see a meeting information highlighted, then select "yes". A form will come up with information about the meeting. Edit information if applicable</li>
 			  <li >If you see no highlighted text or multiple meetings highlighted then select "no"</li>
 			  <li>To edit meeting information you can copy text from the highlighted info</li>
 			  <li>You may need scroll up/down to find out day/time/address info for a meeting</li>
-			</ul>
-		</div>
-
-		<div class="foriframe">
-			<iframe  src="{{ url_for('static', filename = htmlfilename) }}" onload="this.width=screen.width*0.8; this.height=screen.height*0.45;"></iframe>
-		</div>
-		<div class="row">
-			<form method="post" action="/MeetingValidationFormReturn">
-				<input type="hidden" name="mId" value={{m_id}}>
-					Is this information about a meeting?<br>
-				<input type="radio" name="yes" value="Yes">Yes<br>
-				<input type="radio" name="yes" value="No">No<br>
-				<div id="meetingdetails" style="display:none">
-					<div class="form-group row">
-						<label for="time" class="col-xs-2 col-form-label">Time</label>
-						<div class="col-xs-10">
-							<input type="text" class="form-control"  name="mTime" value="{{time}}">
-						</div>
-					</div>
-					<div class="form-group row">
-						<label for="day" class="col-xs-2 col-form-label">Day</label>
-						<div class="col-xs-10">
-							<input type="text" class="form-control" name="mDay" value="{{day}}">
-						</div>
-					</div>
-					<div class="form-group row">
-						<label for="address" class="col-xs-2 col-form-label">Address</label>
-						<div class="col-xs-10">
-							<textarea class="form-control" name="mAddress" value="{{address}}">{{address}}</textarea>
-						</div>
-					</div>
-
-					<input hidden type="text" id="meetingid_custom" value="{{m_id}}" />
-					<button type="submit" class="btn btn-primary pull-right" name="submit" value="submit">Submit</button>
-				</div>
-			</form>
-		</div>
+		</ul>
 	</div>
-</body>
+	<div class="foriframe">
 
-<script type=text/javascript>
-$("form input:radio").change(function (){
-	console.log("change");
-	if ($(this).val() === 'Yes') {
-		$('#meetingdetails').show();
-	} else if ($(this).val() === 'No') {
-		console.log("no selected");
-		$('#meetingdetails').hide();
-		var mid = $('#meetingid_custom').val();
-		if (mid != undefined && mid != null) {
-			alert("Thank you for your contribution");
-			window.location = '/MeetingValidationFormReturn?dropdownvalue=no&mId=' + mid;
-			//console.log(mid);
+	<iframe  src="{{ url_for('static', filename = htmlfilename) }}" onload="this.width=screen.width*0.8; this.height=screen.height*0.45;"></iframe>
+	</div>
+	<div class="row">
+		<form method="post" action="/MeetingValidationFormReturn">		
+			<input type="hidden" name="mId" value={{m_id}}>
+			Is this information about a meeting?<br>
+			<input type="radio" name="yes" value="Yes">Yes<br>
+			<input type="radio" name="yes" value="No">No<br>
+			<div id="meetingdetails" style="display:none">
+			<div class="form-group row">
+				<label for="time" class="col-xs-2 col-form-label">Time</label>
+				<div class="col-xs-10">
+					<input type="text" class="form-control"  name="mTime" value="{{time}}">
+				</div>
+			</div>
+			<div class="form-group row">
+				<label for="day" class="col-xs-2 col-form-label">Day</label>
+				<div class="col-xs-10">
+{#					<input type="text" class="form-control" name="mDay" value="{{day}}">#}
+                    <select name="mDay">
+                        <option value="monday" {{ "selected" if day=="monday" }}>Monday</option>
+                        <option value="tuesday" {{ "selected" if day=="tuesday" }}>Tuesday</option>
+                        <option value="wednesday" {{ "selected" if day=="wednesday" }}>Wednesday</option>
+                        <option value="thursday" {{ "selected" if day=="thursday" }}>Thursday</option>
+                        <option value="friday" {{ "selected" if day=="friday" }}>Friday</option>
+                        <option value="saturday" {{ "selected" if day=="saturday" }}>Saturday</option>
+                        <option value="sunday" {{ "selected" if day=="sunday" }}>Sunday</option>
+                    </select>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label for="address" class="col-xs-2 col-form-label">Address</label>
+				<div class="col-xs-10">
+					<textarea class="form-control" name="mAddress" value="{{address}}">{{address}}</textarea>
+				</div>
+			</div>
+			<input hidden type="text" id="meetingid_custom" value="{{m_id}}" />
+				
+			<button type="submit" class="btn btn-primary pull-right" name="submit" value="submit">Submit</button>
+			</div>
+		</form>
+	</div>
+	</div>
+	</body>
+	
+	
+	<script type=text/javascript>
+		$("form input:radio").change(function (){
+			console.log("change");
+		if ($(this).val() === 'Yes') {
+			$('#meetingdetails').show();
+		} else if ($(this).val() === 'No') {
+			console.log("no selected");
+			$('#meetingdetails').hide();
+			var mid = $('#meetingid_custom').val();        
+			if (mid != undefined && mid != null) {
+				alert("Thank you for your contribution");
+				window.location = '/MeetingValidationFormReturn?dropdownvalue=no&mId=' + mid;
+				//console.log(mid);
+			}
 		}
-	}
-});
-</script>
-
+		});
+		</script>
 {% endblock %}
