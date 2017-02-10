@@ -2,11 +2,13 @@ from selenium import webdriver
 import re
 import sys, string
 import MySQLdb
+from urlparse import urlparse
 
-# save the meeting page into the database
-# @param url -  website address, e.g. "http://www.aawilliamsburg.org/CALENDAR_OF_EVENTS.html"
-#
-# MORE CORNER CASES:
+# running "python CopySourcePage.py" will save all meeting page source codes into the database
+
+
+# save one meeting page souce code into the database
+# MORE CORNER CASES that has not been covered:
 # 1. url(xxx.img)
 # 2. url(../xxx.img)
 def copy_source_page(url):
@@ -88,7 +90,6 @@ def copy_source_page(url):
 	cursor.close()
 	db.close()
 
-from urlparse import urlparse
 # input a full website url (with .html at the end) and return its domain url (without .html at the end)
 def getDomainUrl(url):
 	parsed_uri = urlparse(url)
