@@ -3,7 +3,6 @@ import re
 import sys, string
 import MySQLdb
 import os
-from MyHTMLParser import extract_text
 
 def create_local_domain(meetingrecord, pathf):	
 	reload(sys)
@@ -17,7 +16,7 @@ def create_local_domain(meetingrecord, pathf):
 	db = MySQLdb.connect("localhost", "root", "", "aameetings")
 	cursor = db.cursor()
 	# get html source code from the data base
-	sql = "SELECT source_code FROM local_domain_source_code WHERE url = " + "'"+ meetingrecord[4] +"' ORDER BY seq";
+	sql = "SELECT source_code FROM local_domain_source_code WHERE url = " + "'"+ meetingrecord[4] +"' ORDER BY seq"
 	cursor.execute(sql)
 	for row in cursor:
 		html_source += row[0]
@@ -30,35 +29,29 @@ def create_local_domain(meetingrecord, pathf):
 	local_html.write(html_source);	
 	local_html.close()
 
-	# Load a local html
+	# load a local html
 	abs_path = os.path.abspath(path)
 	browser = webdriver.PhantomJS()
 	browser.get(abs_path);
 
-	# get meeting information saved in the db
-	dbstring=filter(lambda x: x in string.printable,meetingrecord[10])
-	corrected_dbstring = extract_text(dbstring)
-	corrected_dbstring = "".join(corrected_dbstring.split()).replace("nbsp;","")
+	# get full text from the database
+	text = meetingrecord[10].decode('string_escape')
 
-	info_elems=browser.find_elements_by_tag_name(meetingrecord[11])
-	for elem in info_elems:
-		# get each meeting information from the source code
-		outerhtml=filter(lambda x: x in string.printable, elem.get_attribute("outerHTML"))
-		corrected_outerhtml = extract_text(outerhtml)
-		corrected_outerhtml="".join(corrected_outerhtml.split()).replace("&nbsp;","")
+	# find the element that contains matched text
+	elems = browser.find_elements_by_xpath("//" + meetingrecord[11])
+	lists=(o for o in elems if o.text==text)
 
-		# compare the two meeting infomation, if matches, highlight it
-		if corrected_outerhtml==corrected_dbstring:
-			script = "return arguments[0].id = 'bittamoni0'"
-			browser.execute_script(script, elem)
-			k=0
-			allchildrenelems=elem.find_elements_by_xpath(".//*")
-			for onechild in allchildrenelems:
-				k+=1
-				id_e='bittamoni'+str(k)
-				script = "return arguments[0].id = '"+id_e+"'"
-				browser.execute_script(script, onechild)
-			break	
+	# add an id in this element and its children elements
+	elem = lists.next()
+	script = "return arguments[0].id = 'bittamoni0'"
+	browser.execute_script(script, elem)
+	k=0
+	allchildrenelems=elem.find_elements_by_xpath(".//*")
+	for onechild in allchildrenelems:
+		k+=1
+		id_e='bittamoni'+str(k)
+		script = "return arguments[0].id = '"+id_e+"'"
+		browser.execute_script(script, onechild)
 			
 	local_html = open(path, "w+")
 	local_html.write(browser.page_source);	
@@ -69,3 +62,4 @@ def create_local_domain(meetingrecord, pathf):
 	local_html.write('<style> *[id^="bittamoni"] {background-color:yellow;}</style>')
 	local_html.close()
 	browser.quit()
+
