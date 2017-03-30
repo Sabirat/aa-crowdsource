@@ -119,18 +119,22 @@ def crowdsource_data_split(prediction_output):
     csv_string = ('index,actual,predicted,error,prediction,url\n' +
                   prediction_output.buffer_content())
 
-    predictions = csv.DictReader(csv_string.splitlines())
+    predictions = csv.DictReader(csv_string.splitlines(),
+                                 quotechar='\'')
+
     classified_data = {}
 
     for prediction in predictions:
         assert(prediction['predicted'] == '2:1' or prediction['predicted'] == '1:0')
         is_meeting = 1 if prediction['predicted'] == '2:1' else 0
-        classified_data[prediction['url']] = {'meeting_page': is_meeting}
+
+        url = prediction['url'].replace('\\', '')
+        classified_data[url] = {'meeting-page': is_meeting}
 
         if float(prediction['prediction']) >= 0.9:
-            classified_data[prediction['url']]['crowdsource'] = 0
+            classified_data[url]['crowdsource'] = 0
         else:
-            classified_data[prediction['url']]['crowdsource'] = 1
+            classified_data[url]['crowdsource'] = 1
 
     return classified_data
 

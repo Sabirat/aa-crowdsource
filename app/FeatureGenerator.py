@@ -28,6 +28,7 @@ def get_features_from_csv(input_file_name, output_file_name=None):
                 if output_row is None:
                     continue
 
+                print num_written, ':', output_row
                 writer.writerow(output_row)
                 num_written += 1
 
