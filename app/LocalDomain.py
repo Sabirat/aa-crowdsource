@@ -1,6 +1,5 @@
+import re, os, sys, string
 from selenium import webdriver
-import re
-import sys, string
 
 # save website url in the variable named website_url and run the python codd
 # then a local html file named full_local.html will be saved in the same path
@@ -11,8 +10,7 @@ import sys, string
 # 1. url(xxx.img)
 # 2. url(../xxx.img)
 
-def copySourcePage(meetingrecord, pathf):
-	path=path = "app/static/"+pathf
+def copySourcePage(meetingrecord, path):
 	url=meetingrecord[4]
 	reload(sys)
 	sys.setdefaultencoding('utf-8')
@@ -25,7 +23,8 @@ def copySourcePage(meetingrecord, pathf):
 
 	# get source code
 	#browser = webdriver.PhantomJS("D:\Research\phantomjs.exe")
-	browser = webdriver.PhantomJS()
+	browser = webdriver.PhantomJS(executable_path='/home/grad05/rubya001/AAmeeting/aa-crowdsource/app/phantomjs/bin/phantomjs',
+                                service_log_path='/home/grad05/rubya001/AAmeeting/aa-crowdsource/app/ghostdriver.log')
 	browser.get(url);
 
 

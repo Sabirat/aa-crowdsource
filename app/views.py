@@ -19,8 +19,8 @@ from LocalDomain import copySourcePage
 
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = ''
-app.config['MYSQL_DATABASE_DB'] = 'AAMeetings'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'br4cruta'
+app.config['MYSQL_DATABASE_DB'] = 'AAmeetings'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
@@ -38,12 +38,13 @@ def FindAppropriateTask():
 			onerecord=LoadOneMeetingRecordFromDB()
 			return render_template('MeetingIdentificationPage.html',url=onerecord[0],imagepath="images/"+onerecord[1])
 
-		elif request.form['submit'] == 'Validate Meeting Information':
+		elif request.form['submit'] == 'Validate Meeting Information':	
+			ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 			ts = str(int(time.time()))
-			path='local_files/local'+ts+'.html'
+			path=ROOT_DIR+'/static/local_files/local'+ts+'.html'
 			onemeetingrecord=SearchDatabaseForRandomMeeting(mysql)
 			copySourcePage(onemeetingrecord, path)
-			return render_template('MeetingValidationPage.html',url='',htmlfilename=path,m_id=onemeetingrecord[0], day=onemeetingrecord[1], time=onemeetingrecord[2], address=onemeetingrecord[3])
+			return render_template('MeetingValidationPage.html',url='',htmlfilename='local_files/local'+ts+'.html',m_id=onemeetingrecord[0], day=onemeetingrecord[1], time=onemeetingrecord[2], address=onemeetingrecord[3])
 
 		else:
 			return render_template('index.html',title='Home')
