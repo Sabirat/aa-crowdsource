@@ -15,7 +15,7 @@ import threading, os, sys, string
 
 from helperFunctions import GetMeetingAddress, GetMeetingDay, GetMeetingTime
 from MeetingValidation import SearchDatabaseForRandomMeeting
-from LocalDomain import copySourcePage
+from CreateLocalDomain import create_local_domain
 
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = 'root'
@@ -42,7 +42,7 @@ def FindAppropriateTask():
 			ts = str(int(time.time()))
 			path='local_files/local'+ts+'.html'
 			onemeetingrecord=SearchDatabaseForRandomMeeting(mysql)
-			copySourcePage(onemeetingrecord, path)
+			create_local_domain(onemeetingrecord, path)
 			return render_template('MeetingValidationPage.html',url='',htmlfilename=path,m_id=onemeetingrecord[0], day=onemeetingrecord[1], time=onemeetingrecord[2], address=onemeetingrecord[3])
 
 		else:
@@ -233,7 +233,7 @@ def MeetingValidationFormReturn():
 			ts = str(int(time.time()))
 			path='local_files/local'+ts+'.html'
 			onemeetingrecord=SearchDatabaseForRandomMeeting(mysql)
-			copySourcePage(onemeetingrecord, path)
+			create_local_domain(onemeetingrecord, path)
 			return render_template('MeetingValidationPage.html',url='',htmlfilename=path,m_id=onemeetingrecord[0], day=onemeetingrecord[1], time=onemeetingrecord[2], address=onemeetingrecord[3])
 
 		return "<div>Thank you2.</div>"
@@ -248,7 +248,7 @@ def MeetingValidationFormReturn():
 		ts = str(int(time.time()))
 		path='local_files/local'+ts+'.html'
 		onemeetingrecord=SearchDatabaseForRandomMeeting(mysql)
-		copySourcePage(onemeetingrecord, path)
+		create_local_domain(onemeetingrecord, path)
 		return render_template('MeetingValidationPage.html',url='',htmlfilename=path,m_id=onemeetingrecord[0], day=onemeetingrecord[1], time=onemeetingrecord[2], address=onemeetingrecord[3])
 	else:
 		return redirect(url_for('index'))

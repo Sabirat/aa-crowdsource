@@ -70,6 +70,18 @@ CREATE TABLE `meetinginformation` (
   `crowddisapproved` int(11) NOT NULL DEFAULT '0',
   `approvedornot` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `local_domain_source_code`
+--
+
+CREATE TABLE `local_domain_source_code` (
+  `url` varchar(756) NOT NULL, -- The maximum length of an url is 2083. however, the max key length is 767 bytes.
+  `seq` int(11) NOT NULL,
+  `source_code` varchar(60000) NOT NULL -- The maximum row size for the used table type, not counting BLOBs, is 65535.
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 
 --
 -- Dumping data for table `meetinginformation`
@@ -4166,6 +4178,12 @@ ALTER TABLE `meetinginformation`
 --
 ALTER TABLE `urlsbyimage`
   ADD PRIMARY KEY (`url`,`imagename`);
+
+--
+-- Indexes for table `local_domain_source_code`
+--
+ALTER TABLE `local_domain_source_code`
+  ADD PRIMARY KEY (`url`,`seq`);
 
 --
 -- AUTO_INCREMENT for dumped tables
