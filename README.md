@@ -20,6 +20,7 @@ update the calls to use that so that you do not need a local version running. Bu
 5. type `quit` to go back to normal shell
 6. From the repo's root directory, import the `.sql` file `mysql -u root -p database_name < file.sql`
 7. Start the server locally [Mac/Linux](https://coolestguidesontheplanet.com/start-stop-mysql-from-the-command-line-terminal-osx-linux/) [Windows](https://dev.mysql.com/doc/refman/5.7/en/windows-start-command-line.html)
+8. Run `python ./save_source_code_to_db/CopySourcePage.py` to save all html source codes into the database after running `mysql -u root -p database_name < file.sql`
 
 ##### Running
 * Just type `python run.py` in root directory of the repo
