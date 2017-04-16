@@ -18,9 +18,9 @@ from MeetingValidation import SearchDatabaseForRandomMeeting
 from CreateLocalDomain import create_local_domain
 
 mysql = MySQL()
-app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = ''
-app.config['MYSQL_DATABASE_DB'] = 'AAMeetings'
+app.config['MYSQL_DATABASE_USER'] = 'meetingUser'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'social_ties'
+app.config['MYSQL_DATABASE_DB'] = 'aameeting'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
