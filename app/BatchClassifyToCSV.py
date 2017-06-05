@@ -1,4 +1,4 @@
-import csv, os, sys
+import csv, os, sys, MySQLdb
 from FeatureGenerator import get_features_from_csv
 from ClassificationTools import (load_data_csv, prepare_data, classify_data,
                                  load_model, start_weka, stop_weka,
@@ -45,6 +45,57 @@ def classify_directory(root_path='./classify_out'):
                 temp_db_table(data=data, crowdsource=crowdsource, file_name=file_name)
 
     stop_weka()
+
+
+def insert_database_directory():
+    # connect to the database
+    db = MySQLdb.connect("localhost", "root", "", "aameetings")
+    cursor = db.cursor()
+    # get html source code from the data base
+    query = "INSERT INTO meeting_pages( "
+    sql = "SELECT source_code FROM local_domain_source_code WHERE url = " + "'"+ meetingrecord[4] +"' ORDER BY seq"
+    cursor.execute(sql)
+    for row in cursor:
+        html_source += row[0]
+    cursor.close()
+    db.close()
+
+
+def insert_database_directory(data, crowdsource, file_name):
+    db = MySQLdb.connect('localhost', 'root', '', 'AAMeetings')
+    cursor = db.cursor()
+    query_values = []
+    INSERT INTO `urlsbyimage` (`url`, `fullorpartial`, `imagename`) VALUES
+('http://aa-acadiana.org/site/meetings-calendar/', 0, 'img28LIOX5Y7A.png'),
+
+    with open(os.path.join(output_dir, file_name), 'w') as output_csv:
+        features = dict(map(lambda a: list([a.name, a.index]), data.attributes()))
+        fieldnames = features.keys() + ['crowdsource', 'meeting-cw', 'nonmeeting-cw']
+        url_index = features.pop('url')
+
+        writer = csv.DictWriter(output_csv, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for i in range(data.num_instances):
+            instance = data.get_instance(i)
+            url = instance.get_string_value(url_index)
+            row = {'url': url}
+
+            for feature, index in features.iteritems():
+                row[feature] = instance.get_value(index)
+
+            if url not in crowdsource:
+                print 'url not found:', url
+                continue
+
+            row['crowdsource'] = crowdsource[url]['crowdsource']
+            row['meeting-or-not'] = crowdsource[url]['meeting-page']
+            row['meeting-cw'] = 0
+            row['nonmeeting-cw'] = 0
+            query_values.append('({},{},{},{},{})'.format(url,
+                                                          crowdsource[url]['crowdsource'],
+                                                          crowdsource[url]['meeting-page'],
+                                                          0, 0))
 
 
 def temp_db_table(data, crowdsource, file_name, output_dir='./temp_db'):

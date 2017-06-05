@@ -4,6 +4,13 @@ import requests
 
 
 def get_features_from_csv(input_file_name, output_file_name=None):
+    '''Takes in path to csv file as input, writes to specified output file. If output
+    file not provided, will prepend 'out_' to the input file.
+    Goes to each url in the input file and determines the following features: 'url',
+    'meeting-in-url', 'ratio-time', 'ratio-addr', 'count-days', 'count-meeting',
+    'meeting-or-not'. Writes the features and the url to the output file as a csv.
+    Returns number of successfully read urls.
+    '''
     num_written = 0
     with open(input_file_name, 'rb') as input_csv:
         reader = csv.DictReader(input_csv)
@@ -28,7 +35,6 @@ def get_features_from_csv(input_file_name, output_file_name=None):
                 if output_row is None:
                     continue
 
-                print num_written, ':', output_row
                 writer.writerow(output_row)
                 num_written += 1
 
@@ -36,6 +42,14 @@ def get_features_from_csv(input_file_name, output_file_name=None):
 
 
 def get_features_for_url(url, is_meeting=None):
+    ''' Gets the features 'meeting-in-url', 'ratio-time', 'ratio-addr', 'count-days',
+    'count-meeting', 'meeting-or-not' for the specified url. If is_meeting is provided,
+    will treat as training data and return as part of the features, if not, will write a
+    '?' which is what WEKA uses to specify unknown.
+    Does this by getting the counts for each feature, normalizing the features that need
+    it and adding the above (meeting or not) to the final features. Returns the final
+    features as a dict.
+    '''
     parsed_data = __parse_webpage(url)
     if parsed_data is None:
         return None
@@ -53,6 +67,10 @@ def get_features_for_url(url, is_meeting=None):
 
 
 def __parsed_data_to_features(parsed_data):
+    ''' Takes in counts parsed from __parse_webpage and normalizes what needs to be
+    normalized, returning a dict of the final features. If data is None, or length is
+    <=0, returns None.
+    '''
     if parsed_data is None:
         return None
 
@@ -71,6 +89,10 @@ def __parsed_data_to_features(parsed_data):
 
 
 def __get_webpage_fast(url):
+    ''' This is slightly faster than __get_webpage_safe, but I think that it does not
+    handle exceptions well. It is also less robust, so I recommend using
+    __get_webpage_safe
+    '''
     req = urllib2.Request(url, headers={'User-Agent': "Magic Browser"})
 
     try:
@@ -86,6 +108,11 @@ def __get_webpage_fast(url):
 
 
 def __get_webpage_safe(url):
+    ''' Slightly slower, but will return None instead of throwing an exception. Program
+    can just skip the url rather than crashing. Also I think that the library is more
+    reliable for determining success by using 'request.ok', i.e. it is more robist and
+    will check more than I know how to manually as I did above in __get_webpage_fast.
+    '''
     r = requests.get(url)
     if r.ok:
         return r.url, r.text
@@ -93,6 +120,12 @@ def __get_webpage_safe(url):
 
 
 def __parse_webpage(url):
+    ''' Goes to the url and tries to parse counts (not necessarily final features if
+    normalized). If it does not get a successful response from the webpage, returns None.
+    Else it strips the html tags, leaving just the text and passes to helper functions
+    that extract counts from the page. Returns dictionary containing these counts if
+    successful.
+    '''
     url_retrieved, web_content = __get_webpage_safe(url)
     if web_content is None:
         return None

@@ -7,37 +7,42 @@ from weka.classifiers import Evaluation, PredictionOutput, FilteredClassifier, C
 from weka.filters import Filter
 
 
+# TODO
 def load_data_dict(features):
+    ''' Turns dict of features into the 
+    '''
     with tempfile.NamedTemporaryFile() as temp_csv:
         writer = csv.DictWriter(temp_csv.name, fieldnames=features.keys())
-        print writer.header
 
 
 def load_data_csv(input_file_name):
+    ''' Reads csv into the data object that weka likes and returns it. '''
     return load_any_file(input_file_name)
 
 
 def prepare_data(data):
+    ''' Converts boolean features from numeric to nominal, makes sure that we have all of
+    the features that we want, 
+    '''
     assert(data.attribute_by_name('meeting-or-not') is not None)
     assert(data.attribute_by_name('meeting-in-url') is not None)
 
     nominal_option_string = '{},{}'.format(
-            data.attribute_by_name('meeting-or-not').index + 1,
-            data.attribute_by_name('meeting-in-url').index + 1)
+        data.attribute_by_name('meeting-or-not').index + 1,
+        data.attribute_by_name('meeting-in-url').index + 1)
 
     num_to_nominal = Filter(
-            classname='weka.filters.unsupervised.attribute.NumericToNominal',
-            options=['-R', nominal_option_string])
+        classname='weka.filters.unsupervised.attribute.NumericToNominal',
+        options=['-R', nominal_option_string])
     num_to_nominal.inputformat(data)
     data = num_to_nominal.filter(data)
 
     if not data.attribute_by_name('meeting-or-not').is_nominal:
-            data.class_index = 0
-            index_to_replace = data.attribute_by_name('meeting-or-not').index
-            data.delete_attribute(index_to_replace)
-            data.insert_attribute(
-                        Attribute.create_nominal('meeting-or-not', ['0', '1']),
-                        index_to_replace)
+        data.class_index = 0
+        index_to_replace = data.attribute_by_name('meeting-or-not').index
+        data.delete_attribute(index_to_replace)
+        data.insert_attribute(Attribute.create_nominal('meeting-or-not', ['0', '1']),
+                              index_to_replace)
 
     data.class_index = data.attribute_by_name('meeting-or-not').index
 
@@ -54,9 +59,8 @@ def prepare_data(data):
         if attribute.name not in features_to_keep:
             delete_option_string += (str(attribute.index + 1) + ',')
 
-    remove_features = Filter(
-            classname='weka.filters.unsupervised.attribute.Remove',
-            options=['-R', delete_option_string[:-1]])
+    remove_features = Filter(classname='weka.filters.unsupervised.attribute.Remove',
+                             options=['-R', delete_option_string[:-1]])
     remove_features.inputformat(data)
     data = remove_features.filter(data)
 
@@ -66,9 +70,8 @@ def prepare_data(data):
         if attribute.index != url_index:
             reorder_option_string += (str(attribute.index + 1) + ',')
 
-    move_url_to_front = Filter(
-            classname='weka.filters.unsupervised.attribute.Reorder',
-            options=['-R', reorder_option_string[:-1]])
+    move_url_to_front = Filter(classname='weka.filters.unsupervised.attribute.Reorder',
+                               options=['-R', reorder_option_string[:-1]])
     move_url_to_front.inputformat(data)
     data = move_url_to_front.filter(data)
 
@@ -100,8 +103,8 @@ def classify_data(data, classifier):
 
     evaluation = Evaluation(data)
     prediction_output = PredictionOutput(
-            classname='weka.classifiers.evaluation.output.prediction.CSV',
-            options=['-p', str(data.attribute_by_name('url').index + 1)])
+        classname='weka.classifiers.evaluation.output.prediction.CSV',
+        options=['-p', str(data.attribute_by_name('url').index + 1)])
     evaluation.test_model(classifier, data, prediction_output)
 
     return prediction_output
