@@ -26,13 +26,16 @@ def copySourcePage(meetingrecord, path):
 	browser = webdriver.PhantomJS(executable_path='/home/grad05/rubya001/AAmeeting/aa-crowdsource/app/phantomjs/bin/phantomjs',
                                 service_log_path='/home/grad05/rubya001/AAmeeting/aa-crowdsource/app/ghostdriver.log')
 	browser.get(url);
-
+	print >>sys.stderr, 'log msg1: opened browser'
 
 	dbstring=filter(lambda x: x in string.printable,meetingrecord[10])
 	dbstring="".join(dbstring.split()).replace("nbsp;","")
 
 	info_elems=browser.find_elements_by_tag_name(meetingrecord[11])
+	bb=0
 	for elem in info_elems:
+		print >>sys.stderr, 'in loop'+str(bb)
+		bb=bb+1
 		outerhtml=filter(lambda x: x in string.printable, elem.get_attribute("outerHTML"))
 		outerhtml="".join(outerhtml.split()).replace("&nbsp;","")
 
@@ -52,6 +55,7 @@ def copySourcePage(meetingrecord, path):
 	html_page_source = browser.page_source
 
 	lenSource = len(html_page_source)
+	print >>sys.stderr, 'log msg: length'+str(lensource)
 	srcIndexFound = html_page_source.find("src",index)
 	srcIndexFound = srcIndexFound if srcIndexFound!=-1 else lenSource
 	hrefIndexFound = html_page_source.find("href",index)

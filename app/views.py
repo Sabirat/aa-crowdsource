@@ -1,65 +1,106 @@
 from app import app
-from flask import render_template
-from flask import Flask, request, redirect, url_for
-from random import randint
+from flask import render_template,session
+from flask import Flask, request, redirect, url_for, render_template_string
+import random
 from flaskext.mysql import MySQL
 
 from selenium import webdriver
 import time
+import glob
 from PIL import Image
 #from Pillow import Image
 from pytesseract import image_to_string
 from PIL import ImageFilter
 #from Pillow import ImageFilter
 import threading, os, sys, string
+import json, itertools
 
 from helperFunctions import GetMeetingAddress, GetMeetingDay, GetMeetingTime
 from MeetingValidation import SearchDatabaseForRandomMeeting
+from PageValidation import CreateFileWithHTMLSource
 from CreateLocalDomain import create_local_domain
+from db_config import config_db
 
-mysql = MySQL()
-app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'br4cruta'
-app.config['MYSQL_DATABASE_DB'] = 'AAmeetings'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-mysql.init_app(app)
-
+from api.EndpointsAndFunctions import api_app, getPageURLsWithParams, setPasscodeWithParams, postApprovalResultWthParams
+app.register_blueprint(api_app)
+mysq=config_db()
 @app.route('/index')
 @app.route('/')
 
 def index():
+	client_ipaddr=request.environ['REMOTE_ADDR']
+	session['crowdid'] = client_ipaddr
+	ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+	patht=ROOT_DIR+'/static/local_files/'
+	r = glob.glob(patht+"*")
+	for i in r:
+   		os.remove(i)
+	if not os.path.exists(patht):
+    		os.makedirs(patht)
 	return render_template('index.html',
                            title='Home')
 
 @app.route('/FindAppropriateTask',methods=['POST'])
 def FindAppropriateTask():
 	if request.method == 'POST':
-		if request.form['submit'] == 'Identify Meeting from Webpage':
+		if request.form['submit'] == 'Validate a Meeting Page':
+			client_ipaddr=request.environ['REMOTE_ADDR']
+			print client_ipaddr
+			response=setPasscodeWithParams(client_ipaddr)
+			if response=="Success":
+				#return render_template_string(response)
+				responsePages=getPageURLsWithParams(client_ipaddr)
+				arrayofpages=json.loads(responsePages)
+				#return render_template_string(str(arrayofpages[0]['urlid']))
+				for onePage in arrayofpages:
+					if onePage['type'].startswith("10_"):
+						ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+						ts = str(int(time.time()))
+						path=ROOT_DIR+'/static/local_files/local'+ts
+						CreateFileWithHTMLSource(onePage['urlid'],path)
+						onePage['url']='/static/local_files/local'+ts
+				return render_template('PageValidationPage.html',arrayofP=arrayofpages,index=0)
+		elif request.form['submit'] == 'Identify Meeting from Webpage':
 			onerecord=LoadOneMeetingRecordFromDB()
-			return render_template('MeetingIdentificationPage.html',url=onerecord[0],imagepath="images/"+onerecord[1])
+			return render_template('MeetingIdentificationPage.html',imageid=onerecord[0], urlid=onerecord[1],imagepath="images/"+onerecord[3])
 
-		elif request.form['submit'] == 'Validate Meeting Information':	
-			ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-			ts = str(int(time.time()))
-			path=ROOT_DIR+'/static/local_files/local'+ts+'.html'
-			onemeetingrecord=SearchDatabaseForRandomMeeting(mysql)
-
-			create_local_domain(onemeetingrecord, path)
-			return render_template('MeetingValidationPage.html',url='',htmlfilename='local_files/local'+ts+'.html',m_id=onemeetingrecord[0], day=onemeetingrecord[1], time=onemeetingrecord[2], address=onemeetingrecord[3])
+		elif request.form['submit'] == 'Validate Meeting Information':
+			return RenderValidationTemplateDynamic()
 
 		else:
 			return render_template('index.html',title='Home')
 	else:
 		return render_template('index.html',title='Home')
 
+
+def RenderValidationTemplateDynamic():
+	ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+	ts = str(int(time.time()))
+	path=ROOT_DIR+'/static/local_files/local'+ts#+'.html'
+	onemeetingrecord=SearchDatabaseForRandomMeeting(mysql)
+	#return str(onemeetingrecord)
+
+	retfromlocaldomain=create_local_domain(onemeetingrecord, path)
+
+	#HTML file
+	if retfromlocaldomain==1:
+		return render_template('MeetingValidationPage.html',url='',htmlfilename='local_files/local'+ts+'.html',m_id=onemeetingrecord[0], day=onemeetingrecord[1], time=onemeetingrecord[2], address=onemeetingrecord[3])
+
+	############################# PDF file, full line of time, day and address in database. So find these fields before passing to HTML ############################
+	elif retfromlocaldomain==2:
+		return render_template('PDF_MeetingValidationPage.html',url='',htmlfilename='local_files/local'+ts+'.pdf',m_id=onemeetingrecord[0], day=GetMeetingDay(onemeetingrecord[1]), time=GetMeetingTime(onemeetingrecord[2]), address=GetMeetingAddress(onemeetingrecord[3]))
+	else:
+		return retfromlocaldomain
+		return "Error. Try again later."
+
 '''assuming that all the cropped images have been saved in appstatic/imaes folder, this function randomly selects
 one image to show with jcrop and returns the imagepath and url associated with it'''
 def LoadOneMeetingRecordFromDB():
 	cursor = mysql.connect().cursor()
-	cursor.execute("SELECT url,imagename from urlsbyimage where fullorpartial=0")
+	cursor.execute("SELECT imageid,urlid,sequence,imagepath from ImagesFromURLs where sequence>0")
 
 	length=cursor.rowcount
-	randomRecord=randint(0,length-1)
+	randomRecord=random.randint(0,length-1)
 
 	contents=[]
 	for i in range(length):
@@ -219,11 +260,12 @@ def InsertMeetingInDB(OneMeeting):
 		print "exception in db "+str(e)
 
 ########################here starts the functions/routes for meeting validation page#################################
-'''if there is "no" selected in dropdown then we need to increase crowddisapproved in db, otherwise update the corresponding meeting information from form data'''
+'''if there is "no" selected in dropdown, the method is [GET], if form submitted with yes button. then it's [POST] then we need to increase crowddisapproved in db, otherwise update the corresponding meeting information from form data'''
 '''work on this function to split the db work in other functions'''
 @app.route("/MeetingValidationFormReturn", methods=['POST','get'])
 def MeetingValidationFormReturn():
-	print request.method
+	#session['crowdid'] = "worker1"#request.form['crowdid']
+	#print request.method
 	if request.method=='GET':
 		dropdownvalue=request.args.get('dropdownvalue')
 		print dropdownvalue
@@ -231,14 +273,8 @@ def MeetingValidationFormReturn():
 			mid_fromhtml_no=request.args.get('mId')
 			UpdateDisapproval(mid_fromhtml_no)
 			#return redirect(url_for('index'))
-
-			ts = str(int(time.time()))
-			path='local_files/local'+ts+'.html'
-			onemeetingrecord=SearchDatabaseForRandomMeeting(mysql)
-			create_local_domain(onemeetingrecord, path)
-			return render_template('MeetingValidationPage.html',url='',htmlfilename=path,m_id=onemeetingrecord[0], day=onemeetingrecord[1], time=onemeetingrecord[2], address=onemeetingrecord[3])
-
-		return "<div>Thank you2.</div>"
+			return RenderValidationTemplateDynamic()
+			return "<div>Thank you.</div>"
 	elif request.method=='POST':
 		mTime=request.form['mTime']
 		mDay=request.form['mDay']
@@ -247,36 +283,65 @@ def MeetingValidationFormReturn():
 
 		UpdateApproval(mid_fromhtml_no,mTime, mDay, mAddress)
 		#return redirect(url_for('index'))
-		ts = str(int(time.time()))
-		path='local_files/local'+ts+'.html'
-		onemeetingrecord=SearchDatabaseForRandomMeeting(mysql)
-		create_local_domain(onemeetingrecord, path)
-		return render_template('MeetingValidationPage.html',url='',htmlfilename=path,m_id=onemeetingrecord[0], day=onemeetingrecord[1], time=onemeetingrecord[2], address=onemeetingrecord[3])
+
+		return RenderValidationTemplateDynamic()
+
 	else:
 		return redirect(url_for('index'))
 
 def UpdateDisapproval(mid_fromhtml_no):
+
+	midint=int(mid_fromhtml_no)
+	crowdid= session.pop('crowdid', 'worker1')
 	conn = mysql.connect()
 	cursor=conn.cursor()
 	try:
-		'''cursor.execute("SELECT crowddisapproved from meetinginformation where meetingid= %d",mid_fromhtml_no)
-		disapprove_count=cursor.fetchone()[0]
-		disapprove_count+=1'''
-		midint=int(mid_fromhtml_no)
-		cursor.execute("""update meetinginformation set crowddisapproved=crowddisapproved+1 where meetingid=%s""",midint)
+		cursor.execute("SELECT crowddisapproved from MeetingInfoFromAlgo where meetingid= %s",midint)
+		disapprove_count=int(cursor.fetchone()[0])
+		disapprove_count+=1
+
+		cursor.execute("""update MeetingInfoFromAlgo set crowddisapproved=%s, day=%s, time= %s, address=%s where meetingid=%s""",(disapprove_count,dayForm,timeForm,addressForm,midint))
+		if disapprove_count==3:
+			cursor.execute("""update MeetingInfoFromAlgo set approvedornot=%s where meetingid=%s""",(0,midint))
+		cursor.execute("""insert into MeetingApprovalFromCrowd (time,day,address,approved,meetingid,workerid) values(%s,%s,%s,%s,%s,%s)""",("","","",0,midint,crowdid))
 		conn.commit()
-	except Exception as e:
-		print "exception in db "+str(e)
+	except Exception as E:
+		print "Exception in UpdateApproval..."+format(sys.exc_info()[-1].tb_lineno)
+		print E
+		pass
 
 def UpdateApproval(mid_fromhtml_no,timeForm,dayForm,addressForm):
+
+	midint=int(mid_fromhtml_no)
+	crowdid= session.pop('crowdid', 'worker1')
 	conn = mysql.connect()
 	cursor=conn.cursor()
 	try:
-		'''cursor.execute("SELECT crowddisapproved from meetinginformation where meetingid= %d",mid_fromhtml_no)
-		disapprove_count=cursor.fetchone()[0]
-		disapprove_count+=1'''
-		midint=int(mid_fromhtml_no)
-		cursor.execute("""update meetinginformation set meetingtime=%s, meetingday=%s, meetingaddress=%s, crowdapproved=crowdapproved+1 where meetingid=%s""",(timeForm,dayForm,addressForm,midint))
+		cursor.execute("SELECT crowdapproved from MeetingInfoFromAlgo where meetingid= %s",midint)
+		approve_count=int(cursor.fetchone()[0])
+		approve_count+=1
+
+		cursor.execute("""update MeetingInfoFromAlgo set crowdapproved=%s, day=%s, time= %s, address=%s where meetingid=%s""",(approve_count,dayForm,timeForm,addressForm,midint))
+		if approve_count==3:
+			cursor.execute("""update MeetingInfoFromAlgo set approvedornot=%s where meetingid=%s""",(1,midint))
+
+		cursor.execute("""insert into MeetingApprovalFromCrowd (time,day,address,approved,meetingid,workerid) values(%s,%s,%s,%s,%s,%s)""",(timeForm,dayForm,addressForm,1,midint,crowdid))
 		conn.commit()
-	except Exception as e:
-		print "exception in db "+str(e)
+	except Exception as E:
+		print "Exception in UpdateApproval..."+format(sys.exc_info()[-1].tb_lineno)
+		print E
+		pass
+
+##functions for page validation
+@app.route("/PageValidationFormReturn", methods=['POST','get'])
+def PageValidationFormReturn():
+	crowdid= session.pop('crowdid', 'worker1')
+	tenURLs=request.args.get('urls').split(",")
+	approvals=request.args.get('dropdownvalues').split(",")
+	for oneurl,oneapproval in itertools.izip(tenURLs,approvals):
+		postApprovalResultWthParams(crowdid,oneurl,oneapproval)
+	#return render_template_string("worked!"+crowdid)
+	responsePages=getPageURLsWithParams(request.environ['REMOTE_ADDR'])
+	arrayofpages=json.loads(responsePages)
+	return render_template_string("<p>thank you very much for your contribution.</p> <input type='button' value='Close this window' onclick='open("+'""'+","+'"_self"'+").close(); return false;'>")
+	#return render_template('PageValidationPage.html',arrayofP=arrayofpages,index=0)

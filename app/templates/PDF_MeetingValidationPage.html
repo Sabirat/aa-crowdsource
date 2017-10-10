@@ -13,15 +13,22 @@
 			<h2>Help Us Validate a Meeting <small><a href="./index">(Go back to Home)</a></small></h2>
 			Information:
 			<ul>
-			  <li >If you see a meeting information highlighted, then select "yes". A form will come up with information about the meeting. Edit information if applicable</li>
-			  <li >If you see no highlighted text or multiple meetings highlighted then select "no"</li>
+			  <li >If you see a time of meeting highlighted in the PDF, then select "yes". A form will come up with information about that meeting. Edit information if applicable</li>
+			  <li >If you see no highlighted time or multiple time information highlighted then select "no"</li>
 			  <li>To edit meeting information you can copy text from the highlighted info</li>
 			  <li>You may need scroll up/down to find out day/time/address info for a meeting</li>
 			</ul>
 		</div>
 
 		<div class="foriframe">
-			<iframe  src="{{ url_for('static', filename = htmlfilename)}}" onload="this.width='100%'; this.height=screen.height*0.45;"></iframe>
+			<!--<iframe  src="{{ url_for('static', filename = htmlfilename)}}" onload="this.width=screen.width*0.8; this.height=screen.height*0.45;"></iframe> -->
+
+			 <object data="{{ url_for('static', filename = htmlfilename)}}" type="application/pdf" width="100%" height="50%"> 
+			  <p>It appears you don't have a PDF plugin for this browser.
+			   No biggie... you can <a href="resume.pdf">click here to
+			  download the PDF file.</a></p>  
+			 </object>
+
 		</div>
 		<div class="row">
 			<form method="post" action="/MeetingValidationFormReturn">
@@ -68,7 +75,6 @@
 
 <script type=text/javascript>
 
-
 $(function() {
 	var algoday=String("{{day}}");
 	if (!algoday || algoday==="")
@@ -105,7 +111,6 @@ $("form input:radio").change(function (){
 		}
 	}
 });
-
 </script>
 
 {% endblock %}

@@ -1,0 +1,104 @@
+<head>
+	<script>
+	var index=0;
+	var arrayofP={{arrayofP|tojson}};
+	var stringofids,stringofapprovals;
+
+	var arrayofURLs= [];
+	var arrayofApprovals= [];
+	window.onload = function() {
+		if(getParameterByName("tenDone"))
+		{
+			window.open('', '_self', '');
+			window.close();
+		}
+		index={{index}};
+		arrayofP={{arrayofP|tojson}};
+		//alert(arrayofP[index].url);
+		document.getElementById("iframeforurl").width='100%';
+		document.getElementById("iframeforurl").height=screen.height*0.45;
+	};
+
+	function CreateRandomCode(numDigit)
+	{
+		var text = "";
+		var possible = "0123456789";
+
+  		for (var i = 0; i < numDigit; i++)
+    			text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  		return text;
+	}
+
+	function getParameterByName(name, url)
+	{
+		if (!url) url = window.location.href;
+		name = name.replace(/[\[\]]/g, "\\$&");
+		var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+		results = regex.exec(url);
+		if (!results) return null;
+		if (!results[2]) return '';
+			return decodeURIComponent(results[2].replace(/\+/g, " "));
+	}
+
+	function setURL()
+	{
+		if(index>0 & index<10)
+			document.getElementById("iframeforurl").src=arrayofP[index].url;
+		else
+		{	stringofids=arrayofURLs.toString();
+			stringofapprovals=arrayofApprovals.toString();
+			window.location = '/PageValidationFormReturn?tenDone=1&dropdownvalues='+stringofapprovals+'&urls=' + stringofids;
+			alert("Your code for Amazon mTurk is: "+CreateRandomCode(8));
+			window.open('', '_self', '');
+			window.close();
+		}
+	}
+	function IncrementIndex(dr)
+	{	setTimeout(function(){dr.checked = false;}, 1000);
+
+		arrayofURLs.push(arrayofP[index].urlid)
+		arrayofApprovals.push(dr.value);
+		console.log(arrayofApprovals);
+		index=index+1;
+		setURL();
+		console.log(index);
+
+	}
+	</script>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/homepageStyle.css') }}">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity "sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/js/bootstrap.min.js" integrity="sha384-BLiI7JTZm+JWlgKa0M0kGRpJbF2J8q+qreVrKBC47e3K6BW78kGLrCkeRX6I9RoK" crossorigin="anonymous"></script>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/validatemeetingStyle.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename = 'css/jcropStyle.css') }}" type="text/css" />
+</head>
+<body>
+	<div class="container">
+	  	<div class="well">
+				<h2>Help Us Validate a Meeting Page <small><a href="./index">(Go back to Home)</a></small></h2>
+				Information:
+				<ul>
+				  <li >The page you have to validate will be in the following frame. The page may be in different formats (e.g., webpage, PDF, calendar, etc)</li>
+				  <li >We are looking for pages that contain one or more AA meetings. If a page contains list of district meetings, and no AA meetings, that is not considered as a meeting page</li>
+				  <li>You may need scroll up/down to figure out whether the page is a meeting page or not</li>
+				</ul>
+		</div>
+
+		<div class="foriframe">
+			<iframe src="{{arrayofP[0].url}}" id="iframeforurl"  onload="this.width='100%'; this.height=screen.height*0.45;"></iframe>
+
+		</div>
+
+	   <!--<div>
+	   {% for item in arrayofP %}
+	   <p> {{item.urlid}}</p>
+	   {% endfor %}
+	   </div>-->
+		<div width:100%; id='divradio'>
+			<p>Is the above page a "meeting page"?</p>
+			<input type="radio" name="meetingradio" value="1" onclick="IncrementIndex(this);"> Yes<br>
+			<input type="radio" name="meetingradio" value="0" onclick="IncrementIndex(this);"> No<br>
+		</div>
+	</div>
+</body>
